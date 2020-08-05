@@ -1,0 +1,50 @@
+#!/bin/bash
+
+help='printf "# usage:\n# ./wtchr src \"echo changed\"\n"'
+if [[ ! -d $1 ]];
+then
+  printf "#! missing target to watch\n"
+  eval $help
+  exit 1
+fi
+
+if [[ ! -n $2 ]];
+then
+  printf "#! missing trigger to call\n"
+  eval $help
+  exit 1
+fi
+
+args=""
+if [[ -n $3 ]];
+then
+	args="$3"
+fi
+
+target="$1"
+trigger="$2"
+
+finder="find $target -type f $args | xargs ls -o | grep $target"
+old=$(eval "$finder")
+
+clear
+printf "# watching: $target $args\n"
+printf "\n$old" | sed -e 's/^[ \t]*//'
+
+while :
+do
+  new=$(eval "$finder")
+  changes=$(diff -q <(printf "\n$old") <(printf "\n$new"))
+  if [[ $? != 0 ]];
+  then
+    printf "\n#> trigger: $trigger\n"
+    old=$new
+    eval "$trigger"
+    if [[ $? != 0 ]];
+    then
+      printf "\n# stop watching due to trigger exit code: $?\n"
+      exit 1
+    fi
+  fi
+  sleep 1
+done
