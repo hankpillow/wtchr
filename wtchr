@@ -1,4 +1,5 @@
 #!/bin/bash
+# https://raw.githubusercontent.com/hankpillow/wtchr/master/wtchr
 
 help='printf "# usage:\n# ./wtchr src \"echo changed\"\n"'
 if [[ ! -d $1 ]];
