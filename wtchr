@@ -29,7 +29,7 @@ finder="find $target -type f $args | xargs ls -o | grep $target"
 old=$(eval "$finder")
 
 clear
-printf "# watching: $target $args\n"
+echo "# watching: $target $args"
 printf "\n$old" | sed -e 's/^[ \t]*//'
 
 while :
@@ -38,14 +38,17 @@ do
   changes=$(diff -q <(printf "\n$old") <(printf "\n$new"))
   if [[ $? != 0 ]];
   then
-    printf "\n#> trigger: $trigger\n"
+    printf "\n#> changed!\n"
     old=$new
     eval "$trigger"
     if [[ $? != 0 ]];
     then
-      printf "\n# stop watching due to trigger exit code: $?\n"
+      echo "# stop watching due to trigger exit code: $?"
       exit 1
     fi
   fi
   sleep 1
+  clear
+  echo "# watching: $target $args"
+  printf "\n$old" | sed -e 's/^[ \t]*//'
 done
